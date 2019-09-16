@@ -33,6 +33,8 @@ cnt = Counter()
 for i in range(df['place'].shape[0]):
     if df['place'].iloc[i]['country_code'] == 'US':
         cnt[df['place'].iloc[i]['full_name'][-2:]] += 1
+cnt_df = pd.DataFrame.from_dict(cnt, orient='index')
+cnt_df = cnt_df.drop("SA")[0]
 
 # Next step is to make a map visualization of the distribution        
 import os
