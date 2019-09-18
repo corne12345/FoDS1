@@ -32,12 +32,12 @@ def loadTweets(fileName, length):
 
 def tweets_to_candidates(df):
     """
-    This function takes a dataframe of tweets as input. 
+    This function takes a dataframe of tweets as input.
     It select entries that react to either Trump, Hillary or both.
     It then places the tweet text of the  entries in the corresponding dictionary.
     This is the tweet text as a list entry with the tweeters state as key.
     The output is a dict with 3 dicts (both, trump, hillary) with all states as keys and the tweets from that state as valeus.
-    
+
     """
     both_dict = {}
     trump_dict = {}
@@ -64,13 +64,14 @@ def main():
     df = pd.DataFrame.from_dict(tweets_dict, orient='index')
     df = df[['text', 'place']]
 
+    classifier = sa.get_trained_classifier()
+
     dirtyTextDict = df.text
     cleanTestDict = []
     for t in dirtyTextDict:
         cleanTestDict.append(sa.tweet_cleaner_updated(t))
     df['text_clean'] = cleanTestDict
     sa.lemmer(df)
-    print(df['text_clean'])
 
     # Count occurences per state.
     cnt = Counter()

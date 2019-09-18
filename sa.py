@@ -12,6 +12,12 @@ from bs4 import BeautifulSoup
 from nltk.tokenize import WordPunctTokenizer
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.stem.porter import *
+from pprint import pprint
+from nltk.probability import FreqDist
+from nltk.classify.util import apply_features
+from nltk import NaiveBayesClassifier
+
+word_features = []
 
 # Function that first rewrites certain patterns in a text to valid words and
 # then tokenizes all the words the text.
@@ -50,8 +56,70 @@ def tweet_cleaner_updated(text):
 
 def stemmer(df):
     ps = PorterStemmer()
-    df['text_stemmed'] = df['text_clean'].apply(lambda x: ' '.join([ps.stem(word) for word in x.split() ]))
+    sentenceList = df['text_clean'].apply(lambda x: ' '.join([ps.stem(word) for word in x.split() ]))
+    wordsList = sentenceList.apply(lambda x: x.split())
+    df['text_stemmed'] = wordsList
 
 def lemmer(df):
     lmtzr = WordNetLemmatizer()
-    df['text_lemmed'] = df['text_clean'].apply(lambda x: ' '.join([lmtzr.lemmatize(word,'v') for word in x.split() ]))
+    sentenceList = df['text_clean'].apply(lambda x: ' '.join([lmtzr.lemmatize(word,'v') for word in x.split() ]))
+    wordsList = sentenceList.apply(lambda x: x.split())
+    df['text_lemmed'] = wordsList
+
+# Get the separate words in tweets
+# Input:  A list of tweets
+# Output: A list of all words in the tweets
+def get_words_in_tweets(df_train, type):
+    tweets = df_train['text_' + type]
+    all_words = []
+    for words in tweets:
+        all_words.extend(words)
+
+    return all_words
+
+# Create a dictionary measuring word frequencies
+# Input: the list of words
+# Output: the frequency of those words apearing in tweets
+def get_word_features(wordlist):
+    # print(wordlist)
+    wordlist = FreqDist(wordlist)
+    word_features = wordlist.keys()
+    # print ("Word frequency list\n")
+    # pprint(wordlist)
+    return word_features
+
+# Construct our features based on which tweets contain which word
+def extract_features(document):
+    document_words = set(document)
+    features = {}
+    for word in word_features:
+        features['contains(%s)' % word] = (word in document_words)
+    return features
+
+# Function that returns a NaiveBayesClassifier, trained with the movie_reviews datasetself.
+# TODO: TRAINT MOMENTEEL MET HELE DATASET EN TEST NIET!!
+def get_trained_classifier():
+    df = pd.read_csv("sentiment.csv")
+
+    cleanTestDict = []
+    for text in df['text']:
+        cleanTestDict.append(tweet_cleaner_updated(text))
+    df['text_clean'] = cleanTestDict
+
+    lemmer(df)
+    stemmer(df)
+
+    df_final = []
+    type = 'lemmed'
+    global word_features
+    word_features = get_word_features(get_words_in_tweets(df, type))
+    for index, row in df.iterrows():
+        if row.sentiment == 0:
+            df_final.append((row['text_' + type],'negative'))
+        elif row.sentiment == 4:
+            df_final.append((row['text_' + type],'positive'))
+
+    training_set = apply_features(extract_features, df_final)
+    classifier = NaiveBayesClassifier.train(training_set)
+    classifier.show_most_informative_features()
+    return classifier
