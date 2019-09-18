@@ -36,13 +36,11 @@ def main():
     df = pd.DataFrame.from_dict(tweets_dict, orient='index')
     df = df[['text', 'place']]
 
-    testing = df.text
-
-    test_result = []
-    for t in testing:
-        test_result.append(sa.tweet_cleaner_updated(t))
-    df['text_clean'] = test_result
-    print(df['text_clean'])
+    dirtyTextDict = df.text
+    cleanTestDict = []
+    for t in dirtyTextDict:
+        cleanTestDict.append(sa.tweet_cleaner_updated(t))
+    df['text_clean'] = cleanTestDict
 
     # Count occurences per state.
     cnt = Counter()
