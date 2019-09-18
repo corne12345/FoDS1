@@ -1,3 +1,4 @@
+# Import ta (topic analysis) en sa (sentiment analysis)
 import ta
 import sa
 
@@ -30,11 +31,18 @@ def loadTweets(fileName):
     return tweets_dict
 
 
-
 def main():
     tweets_dict = loadTweets('geotagged_tweets_20160812-0912.jsons')
     df = pd.DataFrame.from_dict(tweets_dict, orient='index')
     df = df[['text', 'place']]
+
+    testing = df.text
+
+    test_result = []
+    for t in testing:
+        test_result.append(sa.tweet_cleaner_updated(t))
+    df['text_clean'] = test_result
+    print(df['text_clean'])
 
     # Count occurences per state.
     cnt = Counter()
