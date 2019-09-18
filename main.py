@@ -30,6 +30,34 @@ def loadTweets(fileName, length):
                 break
     return tweets_dict
 
+def tweets_to_candidates(df):
+    """
+    This function takes a dataframe of tweets as input. 
+    It select entries that react to either Trump, Hillary or both.
+    It then places the tweet text of the  entries in the corresponding dictionary.
+    This is the tweet text as a list entry with the tweeters state as key.
+    The output is a dict with 3 dicts (both, trump, hillary) with all states as keys and the tweets from that state as valeus.
+    
+    """
+    both_dict = {}
+    trump_dict = {}
+    hillary_dict ={}
+    for i in range(df['text'].shape[0]):
+        if df['place'].iloc[i]['country'] == 'United States':
+            if '@realDonaldTrump' and '@HillaryClinton' in df['text'].iloc[i]:
+                text = df['text'].iloc[i]
+                state = df['place'].iloc[i]['full_name'][-2:]
+                both_dict.setdefault(state,[]).append(text)
+            elif '@realDonaldTrump'in df['text'].iloc[i]:
+                text = df['text'].iloc[i]
+                state = df['place'].iloc[i]['full_name'][-2:]
+                trump_dict.setdefault(state,[]).append(text)
+            elif '@HillaryClinton' in df['text'].iloc[i]:
+                text = df['text'].iloc[i]
+                state = df['place'].iloc[i]['full_name'][-2:]
+                hillary_dict.setdefault(state,[]).append(text)
+    return {'both':both_dict, 'trump':trump_dict, 'hillary': hillary_dict}
+
 
 def main():
     tweets_dict = loadTweets('geotagged_tweets_20160812-0912.jsons', 1000)
