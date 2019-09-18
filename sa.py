@@ -17,7 +17,7 @@ def tweet_cleaner_updated(text):
     tok = WordPunctTokenizer()
 
     # Regexes used to rewrite certain patterns to valid words.
-    pat1 = r'@[A-Za-z0-9_]+'
+    pat1 = r'@[A-Za-z0-9_]+|#[A-Za-z0-9_]+'
     pat2 = r'https?://[^ ]+'
     combined_pat = r'|'.join((pat1, pat2))
     www_pat = r'www.[^ ]+'
