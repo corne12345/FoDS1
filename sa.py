@@ -10,6 +10,8 @@ from collections import Counter
 import re
 from bs4 import BeautifulSoup
 from nltk.tokenize import WordPunctTokenizer
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.stem.porter import *
 
 # Function that first rewrites certain patterns in a text to valid words and
 # then tokenizes all the words the text.
@@ -40,8 +42,16 @@ def tweet_cleaner_updated(text):
     lower_case = stripped.lower()
     neg_handled = neg_pattern.sub(lambda x: negations_dic[x.group()], lower_case)
     letters_only = re.sub("[^a-zA-Z]", " ", neg_handled)
-    
+
     # During the letters_only process two lines above, it has created unnecessay white spaces,
     # I will tokenize and join together to remove unneccessary white spaces
     words = [x for x  in tok.tokenize(letters_only) if len(x) > 1]
     return (" ".join(words)).strip()
+
+def stemmer(df):
+    ps = PorterStemmer()
+    df['text_stemmed'] = df['text_clean'].apply(lambda x: ' '.join([ps.stem(word) for word in x.split() ]))
+
+def lemmer(df):
+    lmtzr = WordNetLemmatizer()
+    df['text_lemmed'] = df['text_clean'].apply(lambda x: ' '.join([lmtzr.lemmatize(word,'v') for word in x.split() ]))

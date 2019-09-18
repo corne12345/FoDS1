@@ -18,7 +18,7 @@ from matplotlib import cm
 import math
 
 # Function returns dict with tweets from file: "fileName".
-def loadTweets(fileName):
+def loadTweets(fileName, length):
     counter = 0
     tweets_dict = {}
     with open('geotagged_tweets_20160812-0912.jsons') as fd:
@@ -26,13 +26,13 @@ def loadTweets(fileName):
             j_content = json.loads(line)
             tweets_dict[counter] = j_content
             counter += 1
-            if counter == 1000: # to keep it  small
+            if counter == length: # to keep it  small
                 break
     return tweets_dict
 
 
 def main():
-    tweets_dict = loadTweets('geotagged_tweets_20160812-0912.jsons')
+    tweets_dict = loadTweets('geotagged_tweets_20160812-0912.jsons', 1000)
     df = pd.DataFrame.from_dict(tweets_dict, orient='index')
     df = df[['text', 'place']]
 
@@ -41,6 +41,8 @@ def main():
     for t in dirtyTextDict:
         cleanTestDict.append(sa.tweet_cleaner_updated(t))
     df['text_clean'] = cleanTestDict
+    sa.lemmer(df)
+    print(df['text_clean'])
 
     # Count occurences per state.
     cnt = Counter()
